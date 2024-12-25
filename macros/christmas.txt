@@ -1,0 +1,177 @@
+insert text='    -----------------'
+newline
+insert text='    Merry Christmas !'
+newline
+insert text='    -----------------'
+newline
+newline
+insert text='            /\'
+newline
+insert text='           /  \'
+newline
+insert text='          /  O \'
+newline
+insert text='          ------'
+newline
+insert text='          /    \'
+newline
+insert text='         /  O   \'
+newline
+insert text='        /     O  \'
+newline
+insert text='       /   O      \'
+newline
+insert text='       ------------'
+newline
+insert text='        /        \'
+newline
+insert text='       /     O    \'
+newline
+insert text='      /            \'
+newline
+insert text='     /     O        \'
+newline
+insert text='    /            O   \'
+newline
+insert text='   /    O             \'
+newline
+insert text='   --------------------'
+newline
+insert text='            ||'
+newline
+insert text='            ||'
+newline
+insert text='            --'
+newline
+setdocstyle bg=0,70,0
+setdocstyle line=0,70,0
+setdocstyle text=255,255,255
+setlinestyle idx=21 text=109,09,19
+setlinestyle idx=22 text=109,09,19
+setlinestyle idx=23 text=109,09,19
+loop rep=10
+insert text='M'
+setlinestyle idx=4 text=255,0,0
+setlinestyle idx=5 text=255,0,0
+setlinestyle idx=6 text=255,0,0
+insert text='a'
+setlinestyle idx=7 text=255,0,0
+setlinestyle idx=8 text=255,0,0
+setlinestyle idx=9 text=255,0,0
+insert text='d'
+setlinestyle idx=10 text=255,0,0
+setlinestyle idx=11 text=255,0,0
+setlinestyle idx=12 text=255,0,0
+insert text='e'
+setlinestyle idx=13 text=255,0,0
+setlinestyle idx=14 text=255,0,0
+setlinestyle idx=15 text=255,0,0
+insert text=' '
+setlinestyle idx=16 text=255,0,0
+setlinestyle idx=17 text=255,0,0
+setlinestyle idx=18 text=255,0,0
+setlinestyle idx=19 text=255,0,0
+setlinestyle idx=20 text=255,0,0
+setlinestyle idx=21 text=255,0,0
+setlinestyle idx=22 text=255,0,0
+setlinestyle idx=23 text=255,0,0
+
+insert text='w'
+setlinestyle idx=4 text=0,255,0
+setlinestyle idx=5 text=0,255,0
+setlinestyle idx=6 text=0,255,0
+setlinestyle idx=7 text=0,255,0
+insert text='i'
+setlinestyle idx=8 text=0,255,0
+setlinestyle idx=9 text=0,255,0
+setlinestyle idx=10 text=0,255,0
+setlinestyle idx=11 text=0,255,0
+insert text='t'
+setlinestyle idx=12 text=0,255,0
+setlinestyle idx=13 text=0,255,0
+setlinestyle idx=14 text=0,255,0
+setlinestyle idx=15 text=0,255,0
+insert text='h'
+setlinestyle idx=16 text=0,255,0
+setlinestyle idx=17 text=0,255,0
+setlinestyle idx=18 text=0,255,0
+setlinestyle idx=19 text=0,255,0
+insert text=' '
+setlinestyle idx=20 text=0,255,0
+setlinestyle idx=21 text=0,255,0
+setlinestyle idx=22 text=0,255,0
+setlinestyle idx=23 text=0,255,0
+
+insert text='p'
+setlinestyle idx=4 text=255,255,0
+setlinestyle idx=5 text=255,255,0
+setlinestyle idx=6 text=255,255,0
+insert text='y'
+setlinestyle idx=7 text=255,255,0
+setlinestyle idx=8 text=255,255,0
+setlinestyle idx=9 text=255,255,0
+insert text='g'
+setlinestyle idx=10 text=255,255,0
+setlinestyle idx=11 text=255,255,0
+setlinestyle idx=12 text=255,255,0
+insert text='a'
+setlinestyle idx=13 text=255,255,0
+setlinestyle idx=14 text=255,255,0
+setlinestyle idx=15 text=255,255,0
+insert text='m'
+setlinestyle idx=16 text=255,255,0
+setlinestyle idx=17 text=255,255,0
+setlinestyle idx=18 text=255,255,0
+insert text='e'
+setlinestyle idx=19 text=255,255,0
+setlinestyle idx=20 text=255,255,0
+setlinestyle idx=21 text=255,255,0
+insert text=' '
+setlinestyle idx=22 text=255,255,0
+setlinestyle idx=23 text=255,255,0
+
+insert text='!'
+setlinestyle idx=4 text=0,255,255
+setlinestyle idx=5 text=0,255,255
+setlinestyle idx=6 text=0,255,255
+setlinestyle idx=7 text=0,255,255
+setlinestyle idx=8 text=0,255,255
+setlinestyle idx=9 text=0,255,255
+setlinestyle idx=10 text=0,255,255
+setlinestyle idx=11 text=0,255,255
+setlinestyle idx=12 text=0,255,255
+setlinestyle idx=13 text=0,255,255
+setlinestyle idx=14 text=0,255,255
+setlinestyle idx=15 text=0,255,255
+setlinestyle idx=16 text=0,255,255
+setlinestyle idx=17 text=0,255,255
+setlinestyle idx=18 text=0,255,255
+setlinestyle idx=19 text=0,255,255
+setlinestyle idx=20 text=0,255,255
+setlinestyle idx=21 text=0,255,255
+setlinestyle idx=22 text=0,255,255
+setlinestyle idx=23 text=0,255,255
+
+insert text='!'
+setlinestyle idx=4 text=255,0,255
+setlinestyle idx=5 text=255,0,255
+setlinestyle idx=6 text=255,0,255
+setlinestyle idx=7 text=255,0,255
+setlinestyle idx=8 text=255,0,255
+setlinestyle idx=9 text=255,0,255
+setlinestyle idx=10 text=255,0,255
+setlinestyle idx=11 text=255,0,255
+setlinestyle idx=12 text=255,0,255
+setlinestyle idx=13 text=255,0,255
+setlinestyle idx=14 text=255,0,255
+setlinestyle idx=15 text=255,0,255
+setlinestyle idx=16 text=255,0,255
+setlinestyle idx=17 text=255,0,255
+setlinestyle idx=18 text=255,0,255
+setlinestyle idx=19 text=255,0,255
+setlinestyle idx=20 text=255,0,255
+setlinestyle idx=21 text=255,0,255
+setlinestyle idx=22 text=255,0,255
+setlinestyle idx=23 text=255,0,255
+setlinetext text=''
+endloop
