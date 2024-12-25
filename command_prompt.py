@@ -599,6 +599,10 @@ class Command:
         self.error_log = []
         self.error_flag = False
         self.command_string = command_string
+        if self.command_string.startswith("#"):
+            self.name = None
+            self.parameters = {}
+            return
         self.split_command = self.command_string.split()
         if not self.split_command:
             self.name = None

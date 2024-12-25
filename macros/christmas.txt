@@ -1,3 +1,9 @@
+# This is a comment
+# It cannot be after a real command, only on his own line
+# The following lines :
+# Write "merry christmas" and create a pine tree 
+# Make it blink by changing the text color of each line composing the tree
+
 insert text='    -----------------'
 newline
 insert text='    Merry Christmas !'
