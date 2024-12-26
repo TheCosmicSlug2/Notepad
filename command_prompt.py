@@ -117,6 +117,7 @@ class CommandPrompt:
                 self.execute_command()
                 self.current_line = ""
                 cmd_cursor_x = 0
+                self.debug_lines_too_long()
             if event == TAB and can_update:
                 self.propose_filling()
                 cmd_cursor_x = len(self.current_line)
@@ -146,6 +147,17 @@ class CommandPrompt:
             self.state_master.set_last_event(event)
             self.renderer.draw_terminal(self.output_lines, self.colored_lines, self.current_line, cmd_cursor_x, scroll)
             self.renderer.update()
+    
+    def debug_lines_too_long(self):
+        max_chars = 79
+        for line_idx, line in enumerate(self.output_lines):
+            if len(line) <= max_chars:
+                continue
+            changed_line = line[:max_chars]
+            added_line = line[max_chars:]
+            self.output_lines[line_idx] = changed_line
+            self.add_line(string=added_line, idx=line_idx + 1)
+
     
     def propose_filling(self) -> None:
         # Obtenir le premier mot
@@ -187,7 +199,7 @@ class CommandPrompt:
         sleep(time_sleep)
 
 
-    def add_line(self, string="", lighterror=False, error=False) -> None:
+    def add_line(self, string="", lighterror=False, error=False, idx=-1) -> None:
         line_color = self.renderer.cmd_style["line"]
         text_color = self.renderer.cmd_style["text"]
         if not string:
@@ -197,8 +209,12 @@ class CommandPrompt:
         if error:
             text_color = (255, 0, 0)
         
-        self.output_lines.append(string)
-        self.colored_lines.append({"line": line_color, "text": text_color})
+        if idx == -1:        
+            self.output_lines.append(string)
+            self.colored_lines.append({"line": line_color, "text": text_color})
+        else:
+            self.output_lines.insert(idx, string)
+            self.colored_lines.insert(idx, {"line": line_color, "text": text_color})
     
     def clear_cmd(self) -> None:
         self.output_lines = []
@@ -483,10 +499,8 @@ class CommandPrompt:
             x = len(self.line_master.lines[y])
         if "enddoc" in self.command.parameters:
             x, y = self.line_master.last_gridpos
-        if "posx" in self.command.parameters:
-            x = self.command.parameters["posx"]
-        if "posy" in self.command.parameters:
-            y = self.command.parameters["posy"]
+        if "pos" in self.command.parameters:
+            x, y = self.command.parameters["pos"]
         self.cursor.set_pos_and_anchor((x, y))
         self.add_line(f"New cursor position : ({x},{y})")
     
@@ -501,6 +515,9 @@ class CommandPrompt:
     def get_instructions() -> str:
         text = f"{titlelize('Available Commands')} \n"
         for ligne in commands.keys():
+            if ligne.startswith("="):
+                text += f"\n{ligne}\n\n"
+                continue
             text += f" - \"{ligne}\"\n"
         text += "\nType 'help name=[command name]' to show the help for a command"
         return text
@@ -609,7 +626,6 @@ class Command:
             self.parameters = {}
             return
         self.name, self.parameters = self.parse_string(self.command_string)
-        print(self.name, self.parameters)
 
     @staticmethod
     def parse_string(input_str):
