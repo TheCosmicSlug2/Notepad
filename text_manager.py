@@ -201,6 +201,45 @@ class Cursor:
         self.list_selection = None
         self.settings = settings
     
+    def set_fullpos_to_word_end(self):
+        # Quand le curseur est en fin de ligne
+        current_line_lenght = len(self.line_manager.lines[self.gridposy])
+        if self.gridposx == current_line_lenght:
+            if self.gridposy + 1 >= self.line_manager.nb_lines:
+                return
+            self.gridposy += 1
+            self.gridposx = 0
+            self.set_anchor()
+            return
+            
+        for character_idx, character in enumerate(self.line_manager.lines[self.gridposy][self.gridposx + 1:]):
+            if character == " " :
+                self.gridposx += character_idx + 1
+                self.set_anchor()
+                return
+            if self.gridposx + character_idx + 2 == current_line_lenght:
+                self.gridposx += character_idx + 2
+                self.set_anchor()
+                return
+    
+    def set_fullpos_to_word_start(self):
+        if self.gridposx == 0:
+            if self.gridposy == 0:
+                return
+            self.gridposy -= 1
+            self.gridposx = len(self.line_manager.lines[self.gridposy])
+        
+        for character_idx in range(self.gridposx-2, -1, -1):
+            character = self.line_manager.lines[self.gridposy][character_idx]
+            if character == " ":
+                self.gridposx = character_idx + 1
+                self.set_anchor()
+                return
+            if character_idx == 0:
+                self.gridposx = 0
+                self.set_anchor()
+                return
+            
     def get_updated_scroll_y(self, scrolly: int) -> int:
         max_visible_lines = self.settings.MAX_LINES
         # Indice de la première ligne visible

@@ -22,6 +22,10 @@ CTRL_S = 112
 CTRL_L = 113
 CTRL_A = 114
 CTRL_M = 115
+CTRL_RIGHT = 116
+CTRL_LEFT = 117
+CTRL_UP = 118
+CTRL_DOWN = 119
 # Event Pygame Window de 200-299
 QUIT = 200
 # Event Text de 300-399
@@ -53,6 +57,10 @@ class InputManager:
             CTRL_L,
             CTRL_A,
             CTRL_M,
+            CTRL_RIGHT,
+            CTRL_LEFT,
+            CTRL_UP,
+            CTRL_DOWN,
             TAB
         ]
         self.mw_value = 0
@@ -100,7 +108,11 @@ class InputManager:
             pg.K_s: CTRL_S,
             pg.K_l: CTRL_L,
             pg.K_a: CTRL_A,
-            pg.K_m: CTRL_M
+            pg.K_m: CTRL_M,
+            pg.K_RIGHT: CTRL_RIGHT,
+            pg.K_LEFT: CTRL_LEFT,
+            pg.K_DOWN: CTRL_DOWN,
+            pg.K_UP: CTRL_UP
         }
         if keys[pg.K_LCTRL] or keys[pg.K_RCTRL]:
             for crtl_key in crtl_keys:

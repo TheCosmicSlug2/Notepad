@@ -65,11 +65,11 @@ def main():
 
         if event == QUIT:
             app_running = False
-        if event == MW_UP: # Le scroll par de 0 en haut vers le bas
+        if event == MW_UP or (event == CTRL_UP and can_update): # Le scroll par de 0 en haut vers le bas
             dscroll = input_manager.mw_value
             renderer.scrolly = max(0, renderer.scrolly-dscroll) # la page se dirige vers le bas
             scrollbar_update = True
-        if event == MW_DOWN:
+        if event == MW_DOWN or (event == CTRL_DOWN and can_update):
             dscroll = input_manager.mw_value
             nb_not_visible_lines = max(0, line_manager.nb_lines - settings.MAX_LINES)
             renderer.scrolly = min(nb_not_visible_lines, renderer.scrolly + dscroll)
@@ -106,6 +106,10 @@ def main():
                 macro_mode = True
             else:
                 print("No macro file loaded")
+        if event == CTRL_RIGHT and can_update:
+            cursor.set_fullpos_to_word_end()
+        if event == CTRL_LEFT and can_update:
+            cursor.set_fullpos_to_word_start()
         if event == UP and will_update:
             cursor.move_up()
             renderer.scroll = cursor.get_updated_scroll(renderer.scroll)
