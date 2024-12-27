@@ -110,6 +110,8 @@ def main():
             cursor.set_fullpos_to_word_end()
         if event == CTRL_LEFT and can_update:
             cursor.set_fullpos_to_word_start()
+        if event == CTRL_RETURN and can_update:
+            cursor.line_return_no_carry()
         if event == UP and will_update:
             cursor.move_up()
             renderer.scroll = cursor.get_updated_scroll(renderer.scroll)

@@ -228,6 +228,7 @@ class Cursor:
                 return
             self.gridposy -= 1
             self.gridposx = len(self.line_manager.lines[self.gridposy])
+            return
         
         for character_idx in range(self.gridposx-2, -1, -1):
             character = self.line_manager.lines[self.gridposy][character_idx]
@@ -239,6 +240,13 @@ class Cursor:
                 self.gridposx = 0
                 self.set_anchor()
                 return
+    
+    def line_return_no_carry(self):
+        self.line_manager.lines.insert(self.gridposy+1, [])
+        self.line_manager.colored_lines.insert(self.gridposy+1, self.line_manager.default_colored_args())
+        self.gridposy += 1
+        self.gridposx = 0
+        self.set_anchor()
             
     def get_updated_scroll_y(self, scrolly: int) -> int:
         max_visible_lines = self.settings.MAX_LINES
