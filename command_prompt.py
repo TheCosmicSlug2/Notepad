@@ -8,6 +8,7 @@ from utils import *
 from commands import *
 from time import sleep
 import re
+from os import path as ospath
 
 
 """
@@ -166,7 +167,7 @@ class CommandPrompt:
             if "=" in element:
                 element = element[:element.index("=")+1]
                 cut_line[idx] = element
-        if len(cut_line) == 0:
+        if cut_line == [""]:
             return
         if cut_line[0] in commands:
             command_name = cut_line[0]
@@ -183,6 +184,8 @@ class CommandPrompt:
         incomplete_name = cut_line[0]
         possible_fillings = []
         for name in commands:
+            if name.startswith("="): # Commandes de "repères":
+                continue
             if name.startswith(incomplete_name):
                 possible_fillings.append(name)
         if not possible_fillings:
@@ -190,12 +193,23 @@ class CommandPrompt:
         cut_line[0] = possible_fillings[self.filling_idx]
         self.current_line = "".join(cut_line[0])
     
+    def is_valid_parameter(self, name, expected_type):
+        if name not in self.command.parameters:
+            return False
+        if not isinstance(self.command.parameters[name], expected_type):
+            self.add_line(f"Parameter '{name}' not of type '{expected_type.__name__}'", lighterror=True)
+            return False
+        return True
+    
+    
     def sleep(self):
         if not self.command.parameters:
             self.add_line("No sleep value")
             return
-        if "time" in self.command.parameters:
-            time_sleep = self.command.parameters["time"]
+        if not self.is_valid_parameter("time", int):
+            self.add_line("Time paramater is not valid", lighterror=True)
+            return
+        time_sleep = self.command.parameters["time"]
         sleep(time_sleep)
 
 
@@ -227,17 +241,15 @@ class CommandPrompt:
             self.add_line("Sélection curseur copiée")
             return
         # Set current selection to everything
-        start = (0, 0)
-        end = (self.line_master.len_last_line, self.line_master.last_line_idx)
-        if "start" in self.command.parameters and "end" in self.command.parameters:
+        start = self.cursor.anchor
+        end = self.cursor.gridpos
+        if self.is_valid_parameter("start", tuple): 
             start = self.command.parameters["start"]
+        if self.is_valid_parameter("end", tuple):
             end = self.command.parameters["end"]
-        elif "start" in self.command.parameters:
-            start = self.command.parameters["start"]
-        elif "end" in self.command.parameters:
-            end = self.command.parameters["end"]
-        elif "all" in self.command.parameters:
-            pass
+        elif self.is_valid_parameter("all", bool):
+            start = (0, 0)
+            end = (self.line_master.len_last_line, self.line_master.last_line_idx)
         else:
             self.add_line("Arguments 'start', 'end' or 'all' necessary", lighterror=True)
         
@@ -255,7 +267,7 @@ class CommandPrompt:
             self.add_line("Pasted clipboard content to current cursor position")
             return
         
-        if "pos" in self.command.parameters:
+        if self.is_valid_parameter("pos", tuple):
             gridpos = self.command.parameters["pos"]
             clipboard_content = pyperclip.paste()
             addx, addy = self.line_master.add_to_line(clipboard_content, gridpos, get_cursor_repos_info=True)
@@ -266,17 +278,15 @@ class CommandPrompt:
         if not self.command.parameters:
             self.add_line("Need at least 1 argument", lighterror=True)
             return
-        start = (0, 0)
-        end = (self.line_master.len_last_line, self.line_master.last_line_idx)
-        if "start"in self.command.parameters and "end"in self.command.parameters:
+        start = self.cursor.anchor
+        end = self.cursor.gridpos
+        if self.is_valid_parameter("start", int):
             start = self.command.parameters["start"]
+        if self.is_valid_parameter("end", int):
             end = self.command.parameters["end"]
-        if "start" in self.command.parameters:
-            start = self.command.parameters["start"]
-        if "end" in self.command.parameters:
-            end = self.command.parameters["end"]
-        if "all" in self.command.parameters:
-            pass
+        if self.is_valid_parameter("all", bool):
+            start = (0, 0)
+            end = (self.line_master.len_last_line, self.line_master.last_line_idx)
         self.cursor.select_from_pos(start, end)
         
     
@@ -286,13 +296,13 @@ class CommandPrompt:
             self.line_master.upper_line(line_y)
             self.add_line(f"Line {line_y} changed to uppercase")
             return
-        if "lines" in self.command.parameters:
+        if self.is_valid_parameter("lines", tuple):
             startline, endline = self.command.parameters["lines"]
             dy = endline - startline
             for y in range(dy):
                 self.line_master.upper_line(startline + y)
             self.add_line(f"Lines {startline} to {endline} changed to uppercase")
-        if "all" in self.command.parameters:
+        if self.is_valid_parameter("all", tuple):
             for line_idx in range(self.line_master.nb_lines):
                 self.line_master.upper_line(line_idx)
         
@@ -304,7 +314,7 @@ class CommandPrompt:
             self.add_line(f"Line {line_y} changed to lowercase")
             return
 
-        if "lines" in self.command.parameters:
+        if self.is_valid_parameter("lines", tuple):
             startline, endline = self.command.parameters["lines"]
             dy = endline - startline
             for y in range(dy):
@@ -315,7 +325,7 @@ class CommandPrompt:
         gridpos = None
         if not self.command.parameters:
             gridpos = self.cursor.gridpos
-        if "pos" in self.command.parameters:
+        if self.is_valid_parameter("pos", tuple):
             gridpos = self.command.parameters["pos"]
         if not gridpos:
             self.add_line("Wrong arguments", lighterror=True)
@@ -328,7 +338,7 @@ class CommandPrompt:
         gridpos = None
         if not self.command.parameters:
             gridpos = self.cursor.gridpos
-        if "pos" in self.command.parameters:
+        if self.is_valid_parameter("pos", tuple):
             gridpos = self.command.parameters["pos"]
         if not gridpos:
             self.add_line("Wrong arguments", lighterror=True)
@@ -341,12 +351,15 @@ class CommandPrompt:
             filename = "txt_file.txt"
             Local.save_txtfile(filename, self.line_master.lines)
             self.add_line(f"File has been saved in local directory as {filename}")
-        if "directory" in self.command.parameters and "name" in self.command.parameters:
+        if self.is_valid_parameter("directory", str) and self.is_valid_parameter("name", str):
             path = self.command.parameters["directory"]
             name = self.command.parameters["name"]
             fullpath = path+"/"+name
-        if "fullpath" in self.command.parameters:
+        if self.is_valid_parameter("fullpath", str):
             fullpath = self.command.parameters["fullpath"]
+        if not ospath.exists(fullpath):
+            self.add_line(f"Path {fullpath} incorrect", error=True)
+            return
         Local.save_txtfile(fullpath, self.line_master.lines)
         self.add_line(f"File has been saved in {fullpath}")
     
@@ -354,11 +367,14 @@ class CommandPrompt:
         if not self.command.parameters:
             self.add_line("'Fullpath' argument required", lighterror=True)
             return
-        if "fullpath" in self.command.parameters:
+        if self.is_valid_parameter("fullpath", str):
             fullpath = self.command.parameters["fullpath"]
+            if not ospath.exists(fullpath):
+                self.add_line(f"Path '{fullpath}' incorrect", error=True)
+                return
             lines = Local.load_txtfile(fullpath)
             
-        if "macro" in self.command.parameters:
+        if self.is_valid_parameter("macro", bool):
             self.macro_commands = []
             for line in lines:
                 self.macro_commands.append(Command("".join(line)))
@@ -373,29 +389,29 @@ class CommandPrompt:
     def set_doc_style(self) -> None:
         if not self.command.parameters:
             self.add_line("At least 1 parameter required", lighterror=True)
-        if "bg" in self.command.parameters:
+        if self.is_valid_parameter("bg", tuple):
             self.renderer.doc_style["bg"] = self.command.parameters["bg"]
-        if "line" in self.command.parameters:
+        if self.is_valid_parameter("line", tuple):
             self.renderer.doc_style["line"] = self.command.parameters["line"]
-        if "text" in self.command.parameters:
+        if self.is_valid_parameter("text", tuple):
             self.renderer.doc_style["text"] = self.command.parameters["text"]
-        if "cursor" in self.command.parameters:
+        if self.is_valid_parameter("cursor", tuple):
             self.renderer.doc_style["cursor"] = self.command.parameters["cursor"]
-        if "cursorwidth" in self.command.parameters:
+        if self.is_valid_parameter("cursorwidth", int):
             self.renderer.cursor_dims = (self.command.parameters["cursorwidth"], self.renderer.cursor_dims[1])
-        if "cursorheight" in self.command.parameters:
+        if self.is_valid_parameter("cursorheight", int):
             self.renderer.cursor_dims = (self.renderer.cursor_dims[0], self.command.parameters["cursorheight"])
     
     def setcmdstyle(self) -> None:
         if not self.command.parameters:
             self.add_line("At least 1 parameter required", lighterror=True)
-        if "bg" in self.command.parameters:
+        if self.is_valid_parameter("bg", tuple):
             self.renderer.cmd_style["bg"] = self.command.parameters["bg"]
-        if "line" in self.command.parameters:
+        if self.is_valid_parameter("line", tuple):
             self.renderer.cmd_style["line"] = self.command.parameters["line"]
-        if "text" in self.command.parameters:
+        if self.is_valid_parameter("text", tuple):
             self.renderer.cmd_style["text"] = self.command.parameters["text"]
-        if "font" in self.command.parameters:
+        if self.is_valid_parameter("font", str):
             self.renderer.cmd_font = self.renderer.getfont(self.command.parameters["font"])
     
     def setlinestyle(self) -> None:
@@ -404,13 +420,13 @@ class CommandPrompt:
         start = end = self.cursor.gridposy
         line_color = None
         text_color = None
-        if "line" in self.command.parameters:
+        if self.is_valid_parameter("line", tuple):
             line_color = self.command.parameters["line"]
-        if "text" in self.command.parameters:
+        if self.is_valid_parameter("text", tuple):
             text_color = self.command.parameters["text"]
-        if "idx" in self.command.parameters:
+        if self.is_valid_parameter("idx", int):
             start = end = self.command.parameters["idx"]
-        if "array" in self.command.parameters:
+        if self.is_valid_parameter("array", tuple):
             start, end = self.command.parameters["array"]
         for line_idx in range(start, end+1):
             if text_color:
@@ -423,9 +439,9 @@ class CommandPrompt:
             self.add_line("Parameter 'text' required")
             return
         line_y = self.cursor.gridposy
-        if "idx" in self.command.parameters:
+        if self.is_valid_parameter("idx", int):
             line_y = self.command.parameters["idx"]
-        if "text" in self.command.parameters:
+        if self.is_valid_parameter("text", str):
             text = self.command.parameters["text"]
         self.line_master.lines[line_y] = list(text)
 
@@ -437,10 +453,10 @@ class CommandPrompt:
             self.add_line("Empty document created")
             return
         
-        if "rand" in self.command.parameters:
+        if self.is_valid_parameter("rand", tuple):
             maxlines, maxlenght = self.command.parameters["rand"]
         colored = False
-        if "color" in self.command.parameters:
+        if self.is_valid_parameter("color", bool):
             colored = True
 
         self.line_master.random_doc(maxlines, maxlenght, colored)
@@ -469,15 +485,15 @@ class CommandPrompt:
         if not self.command.parameters:
             self.add_line("At least 1 parameter required", lighterror=True)
             return
-        if "text" in self.command.parameters:
+        if self.is_valid_parameter("text", str):
             x, y = self.cursor.gridpos
-            if "line" in self.command.parameters:
+            if self.is_valid_parameter("line", int):
                 y = self.command.parameters["line"]
-            if "x" in self.command.parameters:
+            if self.is_valid_parameter("x", int):
                 x = self.command.parameters["x"]
-            if "start" in self.command.parameters:
+            if self.is_valid_parameter("start", int):
                 x = 0
-            if "end" in self.command.parameters:
+            if self.is_valid_parameter("end", int):
                 x = len(self.line_master.lines[y])
             gridpos = (x, y)
             text = self.command.parameters["text"]
@@ -490,16 +506,16 @@ class CommandPrompt:
         if not self.command.parameters:
             self.add_line("Cursor position unchanged")
             return
-        if "startline" in self.command.parameters:
+        if self.is_valid_parameter("startline", bool):
             x = 0
-        if "startdoc" in self.command.parameters:
+        if self.is_valid_parameter("startdoc", bool):
             x = 0
             y = 0
-        if "endline" in self.command.parameters:
+        if self.is_valid_parameter("endline", bool):
             x = len(self.line_master.lines[y])
-        if "enddoc" in self.command.parameters:
+        if self.is_valid_parameter("enddoc"):
             x, y = self.line_master.last_gridpos
-        if "pos" in self.command.parameters:
+        if self.is_valid_parameter("pos", tuple):
             x, y = self.command.parameters["pos"]
         self.cursor.set_pos_and_anchor((x, y))
         self.add_line(f"New cursor position : ({x},{y})")
@@ -507,7 +523,7 @@ class CommandPrompt:
     def exit(self) -> None:
         if not self.command.parameters:
             self.running = False
-        if "all" in self.command.parameters:
+        if self.is_valid_parameter("all", bool):
             self.running = False
             self.notepad_running = False
 

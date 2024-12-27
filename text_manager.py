@@ -305,6 +305,12 @@ class Cursor:
         # Juste obtenir le texte highlité
         start_y, end_y = sorted([self.anchor[1], self.gridposy])
         start_x, end_x = sorted([self.anchor[0], self.gridposx])
+
+        if start_y < 0 or end_y > self.line_manager.nb_lines:
+            return
+        if start_x < 0 or end_x > len(self.line_manager.lines[end_y]):
+            return
+        
         
         # Obtenir toutes les lignes en y
         self.list_selection = self.line_manager.lines[start_y:end_y+1]
