@@ -1,18 +1,18 @@
-from renderer import Renderer
 from input_manager import *
-from text_manager import LineManager, Cursor
-from state_master import StateMaster
-from rightclick import RightClickAction
-from local import Local
-import pyperclip
-from widget import *
-from settings import Settings
 from command_prompt import CommandPrompt
+from local import Local
+from pyperclip import paste
+from renderer import Renderer
+from rightclick import RightClickAction
+from settings import Settings
+from state_master import StateMaster
+from text_manager import LineManager, Cursor
+from widget import *
 
-
-
-#from profilehooks import profile
-#@profile(stdout=False, filename='basic.prof')  # <== Profiling
+"""
+from profilehooks import profile
+@profile(stdout=False, filename='basic.prof')  # <== Profiling
+"""
 def main():
     settings = Settings()
     renderer = Renderer(settings)
@@ -23,7 +23,7 @@ def main():
     local = Local()
     cursor = Cursor(line_manager, settings)
 
-    console = CommandPrompt(line_manager, cursor, renderer, state_master)
+    console = CommandPrompt(line_manager, settings, cursor, renderer, state_master)
     rightclickaction = RightClickAction(renderer, cursor)
 
     can_update = True
@@ -91,7 +91,7 @@ def main():
         if event == CTRL_X:
             pass
         if event == CTRL_V and will_update:
-            clipboard_content = pyperclip.paste()
+            clipboard_content = paste()
             addx, addy = line_manager.add_to_line(clipboard_content, cursor.gridpos, get_cursor_repos_info=True)
             cursor.set_pos((cursor.gridposx + addx, cursor.gridposy + addy), renderer.scroll) # Pas idéal, si ?
             cursor.set_anchor()

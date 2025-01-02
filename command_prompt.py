@@ -1,14 +1,13 @@
-from text_manager import LineManager
-import pygame as pg
-from input_manager import *
-import pygame as pg
-from local import Local
-import pyperclip
-from utils import *
 from commands import *
-from time import sleep
-import re
+from input_manager import *
+from local import Local
 from os import path as ospath
+from pyperclip import paste
+from re import match, findall
+from text_manager import LineManager
+from time import sleep
+from utils import titlelize
+
 
 
 """
@@ -18,10 +17,11 @@ Le command prompt est une version plus exhaustive des commandes de main.py
 
 
 class CommandPrompt:
-    def __init__(self, line_master: LineManager, cursor, renderer, state_master):
+    def __init__(self, line_master: LineManager, settings, cursor, renderer, state_master):
         self.renderer = renderer
         self.line_master = line_master
         self.CMD_line_master = LineManager()
+        self.settings = settings
         self.cursor = cursor
         self.command_idx = -1
         self.input_master = InputManager()
@@ -44,6 +44,7 @@ class CommandPrompt:
         self.pretext()
         self.reset()
         self.set_possible_commands()
+
 
 
     def set_possible_commands(self) -> None:
@@ -108,7 +109,7 @@ class CommandPrompt:
                 self.current_line = ""
                 cmd_cursor_x = 0
             if event == CTRL_V and can_update:
-                self.current_line = self.current_line[:cmd_cursor_x] + pyperclip.paste() + self.current_line[cmd_cursor_x:]
+                self.current_line = self.current_line[:cmd_cursor_x] + paste() + self.current_line[cmd_cursor_x:]
             if event == RETURN and can_update:
                 if self.current_line != "" and self.current_line != self.last_commands[0]:
                     self.last_commands.insert(0, self.current_line)
@@ -127,7 +128,7 @@ class CommandPrompt:
                     self.current_line = self.current_line[0:cmd_cursor_x-1] + self.current_line[cmd_cursor_x:]
                     cmd_cursor_x = max(0, cmd_cursor_x-1)
             if event == MW_UP:
-                scroll = min(scroll + self.input_master.mw_value, abs((len(self.output_lines) - self.renderer.settings.MAX_LINES)))
+                scroll = min(scroll + self.input_master.mw_value, abs((len(self.output_lines) - self.settings.MAX_LINES)))
             if event == MW_DOWN:
                 scroll = max(scroll - self.input_master.mw_value, -1)
             if event == UP and can_update:
@@ -149,8 +150,11 @@ class CommandPrompt:
             self.renderer.draw_terminal(self.output_lines, self.colored_lines, self.current_line, cmd_cursor_x, scroll)
             self.renderer.update()
     
-    def debug_lines_too_long(self):
-        max_chars = 79
+    def debug_lines_too_long(self) -> None:
+        """
+        Divise chaque ligne trop longue du cmd en 2 lignes
+        """
+        max_chars = 79 # Arbitraire
         for line_idx, line in enumerate(self.output_lines):
             if len(line) <= max_chars:
                 continue
@@ -161,6 +165,10 @@ class CommandPrompt:
 
     
     def propose_filling(self) -> None:
+        """ 
+        Change la ligne d'input de l'user en ajoutant la commande ou le paramètre se rapprochant la ligne actuelle
+        TODO : Un paramètre à moitié formé sera réajouté en entier, au lieu d'être remplacé
+        """
         # Obtenir le premier mot
         cut_line = self.current_line.strip().split(" ")
         for idx, element in enumerate(cut_line):
@@ -193,44 +201,57 @@ class CommandPrompt:
         cut_line[0] = possible_fillings[self.filling_idx]
         self.current_line = "".join(cut_line[0])
     
-    def is_valid_parameter(self, name, expected_type):
+    def is_valid_parameter(self, name: str, *expected_types: type) -> bool:
         if name not in self.command.parameters:
             return False
-        if not isinstance(self.command.parameters[name], expected_type):
-            self.add_line(f"Parameter '{name}' not of type '{expected_type.__name__}'", lighterror=True)
-            return False
-        return True
+        
+        param_value = self.command.parameters[name]
+
+        if any(isinstance(param_value, expected_type) for expected_type in expected_types):
+            return True
+        
+        str_accepted_types = " | ".join([_type.__name__ for _type in expected_types])
+        self.add_line(f"Parameter '{name}' not of type ({str_accepted_types})", lighterror=True)
+        return False
     
     
-    def sleep(self):
+    def sleep(self) -> None:
+        """
+        Macro Related
+        Stop the program for a period of time
+        """
         if not self.command.parameters:
             self.add_line("No sleep value")
             return
-        if not self.is_valid_parameter("time", int):
-            self.add_line("Time paramater is not valid", lighterror=True)
+        if not self.is_valid_parameter("time", int, float):
+            self.add_line("Time parameter is not valid", lighterror=True)
             return
         time_sleep = self.command.parameters["time"]
         sleep(time_sleep)
 
 
     def add_line(self, string="", lighterror=False, error=False, idx=-1) -> None:
+        """ 
+        Ajoute une ligne dans le cmd
+        Si idx est négatif, ajoute une ligne en partant de la fin
+        """
         line_color = self.renderer.cmd_style["line"]
-        text_color = self.renderer.cmd_style["text"]
-        if not string:
-            string = ""
-        if lighterror:
-            text_color = (255, 255, 0)
-        if error:
-            text_color = (255, 0, 0)
+        text_color = (
+            self.settings.cmd_error if error else
+            self.settings.cmd_light_error if lighterror else
+            self.renderer.cmd_style["text"]
+        )
         
-        if idx == -1:        
-            self.output_lines.append(string)
-            self.colored_lines.append({"line": line_color, "text": text_color})
-        else:
-            self.output_lines.insert(idx, string)
-            self.colored_lines.insert(idx, {"line": line_color, "text": text_color})
+        if idx < 0:
+            idx = len(self.output_lines) + idx + 1
+        if abs(idx) > len(self.output_lines):  # Si idx est supérieur à la longueur de la liste
+            idx = len(self.output_lines)  # Ajouter à la fin
+        
+        self.output_lines.insert(idx, string)
+        self.colored_lines.insert(idx, {"line": line_color, "text": text_color})
     
     def clear_cmd(self) -> None:
+        """ Supprime le contenu du cmd | Réinitialise la liste des lignes """
         self.output_lines = []
         self.colored_lines = []
         self.pretext()
@@ -261,7 +282,7 @@ class CommandPrompt:
     
     def paste(self) -> None:
         if not self.command.parameters:
-            clipboard_content = pyperclip.paste()
+            clipboard_content = paste()
             addx, addy = self.line_master.add_to_line(clipboard_content, self.cursor.gridpos, get_cursor_repos_info=True)
             self.cursor.set_pos_and_anchor((self.cursor.gridposx + addx, self.cursor.gridposy + addy)) # Pas idéal, si ?
             self.add_line("Pasted clipboard content to current cursor position")
@@ -269,7 +290,7 @@ class CommandPrompt:
         
         if self.is_valid_parameter("pos", tuple):
             gridpos = self.command.parameters["pos"]
-            clipboard_content = pyperclip.paste()
+            clipboard_content = paste()
             addx, addy = self.line_master.add_to_line(clipboard_content, gridpos, get_cursor_repos_info=True)
             self.cursor.set_pos_and_anchor((gridpos[0] + addx, gridpos[1] + addy), self.renderer.scrolly)
         
@@ -382,7 +403,7 @@ class CommandPrompt:
             self.add_line("File loaded as macro | Press [Ctrl+m] in the notepad to start")
         else:
             self.line_master.lines = Local.load_txtfile(fullpath)
-            for _ in range(len(self.line_master.lines)):
+            for _ in self.line_master.lines:
                 self.line_master.colored_lines.append(self.line_master.default_colored_args())
             self.add_line("File loaded as text")
     
@@ -590,8 +611,6 @@ class CommandPrompt:
             if self.loop_ctr >= self.rep:
                 self.looping = False
         self.macro_command_idx += 1
-        #print(f"Start loop : {self.start_loop}, current_idx = {self.macro_command_idx}, endloop = {self.end_loop}")
-
 
     def set_loop(self) -> None:
         if not self.macro_commands:
@@ -603,12 +622,13 @@ class CommandPrompt:
 
         # Recherche directe de "endloop" après start_loop
         for idx in range(self.start_loop, len(self.macro_commands)):
-            if self.macro_commands[idx].name == "endloop":
-                self.end_loop = idx
-                self.looping = True
-                return
+            if self.macro_commands[idx].name != "endloop":
+                continue
+            self.end_loop = idx
+            self.looping = True
+            return
 
-        print("No endloop found!")
+        print("No endloop found => Will only loop once")
         self.looping = False
 
 
@@ -644,13 +664,16 @@ class Command:
         self.name, self.parameters = self.parse_string(self.command_string)
 
     @staticmethod
-    def parse_string(input_str):
+    def parse_string(input_str: str) -> tuple[
+                                            str, 
+                                            dict[str, str | int | float | bool]
+                                            ]:
         # Extraction de la première partie (le mot isolé comme "load")
-        name_match = re.match(r'^(\w+)', input_str)
+        name_match = match(r'^(\w+)', input_str)
         name = name_match.group(1) if name_match else None
         
         # Extraction des paires clé-valeur
-        attributes = re.findall(r'(\w+)=("[^"]*"|\'[^\']*\'|[^\s]+)|(-\w+)', input_str)
+        attributes = findall(r'(\w+)=("[^"]*"|\'[^\']*\'|[^\s]+)|(-\w+)', input_str)
         parsed_dict = {}
         
         for attr in attributes:
@@ -668,7 +691,7 @@ class Command:
                 value = value[1:-1]  # Supprimer les guillemets simples ou doubles
             elif value.isdigit():  # Si la valeur est un entier
                 value = int(value)
-            elif re.match(r'^\d+\.\d+$', value):  # Si la valeur est un float
+            elif match(r'^\d+\.\d+$', value):  # Si la valeur est un float
                 value = float(value)
             
             parsed_dict[key] = value  # Ajouter au dictionnaire
@@ -676,7 +699,5 @@ class Command:
         return name, parsed_dict
                 
     
-    def add_error(self, string) -> None:
+    def add_error(self, string: str) -> None:
         self.error_log.append(string)
-
-c = Command("help name=command")

@@ -1,8 +1,7 @@
+from input_manager import *
+from pygame import SYSTEM_CURSOR_ARROW, SYSTEM_CURSOR_IBEAM
 from settings import *
 from widget import WidgetMaster, Button
-from input_manager import *
-import pygame as pg
-from input_manager import *
 
 
 DEF_button_dims = (220, 50)
@@ -35,7 +34,7 @@ class RightClickAction:
         
     def mainloop(self) -> None:
         self.renderer.fill_screen((255,255,255))
-        self.renderer.set_mouse_nature(pg.SYSTEM_CURSOR_ARROW)
+        self.renderer.set_mouse_nature(SYSTEM_CURSOR_ARROW)
         rightclick_running = True
         last_event = None
         while rightclick_running:
@@ -50,4 +49,4 @@ class RightClickAction:
             last_event = event
             self.renderer.show_buttons(self.widget_manager.widgets, self.button_dims)
             self.renderer.update()
-        self.renderer.set_mouse_nature(pg.SYSTEM_CURSOR_IBEAM)
+        self.renderer.set_mouse_nature(SYSTEM_CURSOR_IBEAM)

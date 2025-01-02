@@ -1,4 +1,4 @@
-from settings import *
+from settings import Settings
 import pygame as pg
 
 

@@ -276,7 +276,7 @@ commands = {
     "sleep": {
         "description": "Stop the program for a period of time",
         "param": [
-            "[time] (int) : Sleep duration"
+            "[time] (int | float) : Sleep duration"
         ],
         "exemples": [
             "sleep time=10 # Stop the program for 10 seconds"

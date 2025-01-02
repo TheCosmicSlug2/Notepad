@@ -1,5 +1,4 @@
 from time import time
-from settings import *
 
 class StateMaster:
     def __init__(self, settings):

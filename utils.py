@@ -14,3 +14,7 @@ def random_rgb():
 def titlelize(word: str, marge: int=2) -> str:
     """ Stylise un titre """
     return f"{'-' * (len(word) + 2 * marge + 2)}\n|{' ' * marge}{word}{' ' * marge}|\n{'-' * (len(word) + 2 * marge + 2)}"
+
+def is_float(string: str):
+    """ En assument que le string est déjà convertible en int """
+    return "." in string

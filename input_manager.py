@@ -67,7 +67,7 @@ class InputManager:
         ]
         self.mw_value = 0
 
-    def get_pg_events(self):
+    def get_pg_events(self) -> int | None:
         self.unicode_event = None
         self.is_only_unicode = False
         for event in pg.event.get():
@@ -144,22 +144,21 @@ class InputManager:
         self.is_only_unicode = True
         return self.unicode_event
     
-    def update_last_event(self, event_name):
-        self.last_event = event_name
+
 
     def get_key_pressed():
         return pg.key.get_pressed()
 
     @staticmethod
-    def get_mouse_pos():
+    def get_mouse_pos() -> tuple[int, int]:
         return pg.mouse.get_pos()
     
     @staticmethod
-    def get_mouse_grid_pos(cell_dims):
+    def get_mouse_grid_pos(cell_dims: tuple[int, int]) -> tuple[int, int]:
         mousex, mousey = pg.mouse.get_pos()
         gridx = mousex // cell_dims[0]
         gridy = mousey // cell_dims[1]
         return gridx, gridy
     
-    def set_last_event(self, event):
+    def set_last_event(self, event: int) -> None:
         self.last_event = event

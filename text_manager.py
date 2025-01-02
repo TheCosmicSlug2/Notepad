@@ -1,6 +1,6 @@
+from datetime import datetime
 from random import randint, choice
 from pyperclip import copy
-from datetime import datetime
 from utils import random_rgb
 
 
@@ -8,7 +8,6 @@ class LineManager:
     def __init__(self):
         self.lines = [[]]
         self.colored_lines = [self.default_colored_args()]
-
     
     def reset_all_lines(self) -> None:
         self.lines = [[]]
@@ -20,7 +19,7 @@ class LineManager:
     
     def random_doc(self, maxlines: int, maxlinelenght: int, colored=False) -> None:
         self.no_lines()
-        possible = "abcdefghijklmnopqrstuvwxyz1234567890&é\"'(-è_çà=~#{[|`\^@])^¨ù%!:;,§/.?*µ²"
+        possible = "abcdefghijklmnopqrstuvwxyz1234567890&é\"'(-è_çà=~#{[|`\^@])^¨ù%!:;,§/.?*µ² "
         lst = list(possible)
         for _ in range(randint(1, maxlines)): # La taille totale doit être au moins d'une ligne
             line = []
@@ -162,9 +161,13 @@ class LineManager:
             self.colored_lines.pop(-1)
             return
 
-
     
-    def add_to_line(self, string: str, cursor_pos: tuple[int, int], get_cursor_repos_info: bool) -> None:
+    def add_to_line(self, 
+                    string: str, 
+                    cursor_pos: tuple[int, int], 
+                    get_cursor_repos_info: bool
+                    ) -> None:
+        
         char_idx, line_idx = cursor_pos
         current_line = self.lines[line_idx]
 
@@ -182,7 +185,7 @@ class LineManager:
 
         # Remplacer la ligne actuelle et insérer les nouvelles lignes
         self.lines[line_idx:line_idx + 1] = new_line_lists
-        self.colored_lines[line_idx:line_idx + 1] = [self.default_colored_args() for _ in range(len(split_lines))]
+        self.colored_lines[line_idx:line_idx + 1] = [self.default_colored_args() for _ in split_lines]
 
         if get_cursor_repos_info:
             return len(new_line_lists[-1]), len(new_line_lists)-1
@@ -310,7 +313,6 @@ class Cursor:
             return
         if start_x < 0 or end_x > len(self.line_manager.lines[end_y]):
             return
-        
         
         # Obtenir toutes les lignes en y
         self.list_selection = self.line_manager.lines[start_y:end_y+1]
